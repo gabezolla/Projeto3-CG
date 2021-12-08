@@ -84,10 +84,10 @@ Além disso, destacar-se-á o uso de mapeamento cúbico (do inglês cubemap), qu
 void Model::loadCubeTexture(const std::string& path) {
   if (!std::filesystem::exists(path)) return;
 
-  abcg::glDeleteTextures(1, &m_cubeTexture);
+  glDeleteTextures(1, &m_cubeTexture);
   m_cubeTexture = abcg::opengl::loadCubemap(
-      {path + "posx.jpg", path + "negx.jpg", path + "posy.jpg",
-       path + "negy.jpg", path + "posz.jpg", path + "negz.jpg"});
+      {path + "px.png", path + "nx.png", path + "py.png",
+       path + "ny.png", path + "pz.png", path + "nz.png"});
 }
 ```
 
