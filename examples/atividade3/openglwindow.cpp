@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <glm/gtc/matrix_inverse.hpp>
 
+// Eventos de mouse
 void OpenGLWindow::handleEvent(SDL_Event& event) {
   glm::ivec2 mousePosition;
   SDL_GetMouseState(&mousePosition.x, &mousePosition.y);
@@ -36,7 +37,8 @@ void OpenGLWindow::initializeGL()
   initializeSound(getAssetsPath() + "sounds/squid-song.wav");
   glClearColor(0, 0, 0, 1);
   glEnable(GL_DEPTH_TEST);
-    // Create programs
+
+  // Gerar programas a partir da pasta shaders
   for (const auto& name : m_shaderNames) {
     auto path{getAssetsPath() + "shaders/" + name};
     auto program{createProgramFromFile(path + ".vert", path + ".frag")};
@@ -45,19 +47,19 @@ void OpenGLWindow::initializeGL()
   
   loadModel(getAssetsPath() + "soldier_circle.obj");
 
-  // Load cubemap
+  // Carregar o mapa de textura cúbico
   m_model.loadCubeTexture(getAssetsPath() + "maps/cube/");
 
-    // Initial trackball spin
+  // Trackball
   m_trackBallModel.setAxis(glm::normalize(glm::vec3(1, 1, 0)));
   m_trackBallModel.setVelocity(0.0f);
 
   initializeSkybox();
-
 }
 
+// Inicializa o Skybox
 void OpenGLWindow::initializeSkybox() {
-  // Create skybox program
+
   auto path{getAssetsPath() + "shaders/" + m_skyShaderName};
   m_skyProgram = createProgramFromFile(path + ".vert", path + ".frag");
 
@@ -88,13 +90,14 @@ void OpenGLWindow::initializeSkybox() {
 
 
 void OpenGLWindow::initializeSound(std::string path){
-  // clean up previous sounds
+  // Libera buffer caso tenha outro áudio
   SDL_CloseAudioDevice(m_deviceId);
   SDL_FreeWAV(m_wavBuffer);
 
   SDL_AudioSpec wavSpec;
   Uint32 wavLength;
 
+  // Carrega som
   if (SDL_LoadWAV(path.c_str(), &wavSpec, &m_wavBuffer, &wavLength) == nullptr) {
     throw abcg::Exception{abcg::Exception::Runtime(
         fmt::format("Failed to load sound {} ({})", path, SDL_GetError()))};
@@ -110,6 +113,7 @@ void OpenGLWindow::initializeSound(std::string path){
   SDL_PauseAudioDevice(m_deviceId, 0);
 }
 
+// Carrega textura para os fragmentos.
 void OpenGLWindow::loadModel(std::string_view path) {
   m_model.loadDiffuseTexture(getAssetsPath() + "maps/soldiers.png");
   m_model.loadNormalTexture(getAssetsPath() + "maps/soldiers.png");
@@ -123,7 +127,6 @@ void OpenGLWindow::loadModel(std::string_view path) {
   shininess = m_model.getShininess();
 }
 
-
 void OpenGLWindow::paintGL()
 {
   update();
@@ -131,16 +134,16 @@ void OpenGLWindow::paintGL()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0, 0, m_viewportWidth, m_viewportHeight);
 
-
   // Use currently selected program
   const auto program{m_programs.at(m_currentProgramIndex)};
   glUseProgram(program);
+
   // Get location of uniform variables
   GLint viewMatrixLoc{glGetUniformLocation(program, "viewMatrix")};
   GLint projMatrixLoc{glGetUniformLocation(program, "projMatrix")};
   GLint modelMatrixLoc{glGetUniformLocation(program, "modelMatrix")};
   GLint normalMatrixLoc{glGetUniformLocation(program, "normalMatrix")};
-  GLint lightDirLoc{glGetUniformLocation(program, "lightDirWorldSpace")};//new
+  GLint lightDirLoc{glGetUniformLocation(program, "lightDirWorldSpace")};
   GLint shininessLoc{glGetUniformLocation(program, "shininess")};
   GLint IaLoc{glGetUniformLocation(program, "Ia")};
   GLint IdLoc{glGetUniformLocation(program, "Id")};
@@ -149,16 +152,16 @@ void OpenGLWindow::paintGL()
   GLint KdLoc{glGetUniformLocation(program, "Kd")};
   GLint KsLoc{glGetUniformLocation(program, "Ks")};
   GLint diffuseTexLoc{glGetUniformLocation(program, "diffuseTex")}; 
-  GLint normalTexLoc{glGetUniformLocation(program, "normalTex")}; //new
+  GLint normalTexLoc{glGetUniformLocation(program, "normalTex")};
   GLint cubeTexLoc{glGetUniformLocation(program, "cubeTex")};
-  GLint mappingModeLoc{glGetUniformLocation(program, "mappingMode")}; //new
-  GLint texMatrixLoc{glGetUniformLocation(program, "texMatrix")}; //new
+  GLint mappingModeLoc{glGetUniformLocation(program, "mappingMode")};
+  GLint texMatrixLoc{glGetUniformLocation(program, "texMatrix")};
 
-  // Set uniform variables used by every scene object
+  // Atribui às variáveis de ambiente
   glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, &m_viewMatrix[0][0]);
   glUniformMatrix4fv(projMatrixLoc, 1, GL_FALSE, &m_projMatrix[0][0]);
   glUniform1i(diffuseTexLoc, 0);
-  glUniform1i(normalTexLoc, 1); // 1 -> 2
+  glUniform1i(normalTexLoc, 1);
   glUniform1i(cubeTexLoc, 2);
   glUniform1i(mappingModeLoc, m_mappingMode);
 
@@ -170,8 +173,6 @@ void OpenGLWindow::paintGL()
   glUniform4fv(IaLoc, 1, &Ia.x);
   glUniform4fv(IdLoc, 1, &Id.x);
   glUniform4fv(IsLoc, 1, &Is.x);
-
- // Set uniform variables of the current object
   glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, &m_modelMatrix[0][0]);
 
   auto modelViewMatrix{glm::mat3(m_viewMatrix * m_modelMatrix)};
@@ -182,13 +183,10 @@ void OpenGLWindow::paintGL()
   glUniform4fv(KaLoc, 1, &Ka.x);
   glUniform4fv(KdLoc, 1, &Kd.x);
   glUniform4fv(KsLoc, 1, &Ks.x);
+
+  // Renderiza modelo e skybox  
   m_model.render(trianglesToDraw);
-
-    renderSkybox();
-
-
-  //glUseProgram(0); //mexi aqui
-
+  renderSkybox();
 }
 
 void OpenGLWindow::renderSkybox() {
@@ -223,8 +221,8 @@ void OpenGLWindow::renderSkybox() {
 void OpenGLWindow::paintUI() {
     abcg::OpenGLWindow::paintUI();
 
+    // Valores de perspectiva e proporção de tela
     glFrontFace(GL_CCW);
-
     {
       auto aspect{(static_cast<float>(m_viewportWidth) /
                   static_cast<float>(m_viewportHeight))};
@@ -241,6 +239,7 @@ void OpenGLWindow::paintUI() {
 
     static std::size_t currentIndex{};
 
+    // Widget de escolha do Soldado
     ImGui::PushItemWidth(120);
     if (ImGui::BeginCombo("Soldier", m_soldiers.at(currentIndex))) {
       for (auto index : iter::range(m_soldiers.size())) {
@@ -290,6 +289,7 @@ void OpenGLWindow::terminateSkybox() {
 
 void OpenGLWindow::update()
 {
+  // Caso a música termine, recomeça após alguns segundos
   if (m_musicTimer.elapsed() > 112) {
       m_musicTimer.restart();
       initializeSound(getAssetsPath() + "sounds/squid-song.wav");
