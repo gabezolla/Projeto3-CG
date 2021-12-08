@@ -7,7 +7,7 @@ Autores: **Gabriel Zolla Juarez - RA: 11201721446**
 
 **Link do repositório do código-fonte:** https://github.com/gabezolla/Projeto3-CG/tree/main/examples/atividade3
 
-**Link para o vídeo demonstrativo:** https://youtu.be/PAA6el45YL8
+**Link para o vídeo demonstrativo:** https://youtu.be/ZBtz5WcItsI
 
 Este repositório contém o código-fonte do Round-6, projeto desenvolvido para a disciplina de Computação Gráfica, ministrada pelo Prof. Bruno Dorta.
 
