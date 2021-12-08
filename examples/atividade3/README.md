@@ -5,9 +5,7 @@ Autores: **Gabriel Zolla Juarez - RA: 11201721446**
 
 **Pedro Henrique Batistela Lopes - RA: 11201722043**
 
-**Link do repositório do código-fonte:** https://github.com/gabezolla/abcg/tree/main/examples/pokeduel
-
-**Link para a página Web com a aplicação em WebAssembly:** https://gabezolla.github.io/abcg/pokeduel/
+**Link do repositório do código-fonte:** https://github.com/gabezolla/Projeto3-CG/tree/main/examples/atividade3
 
 **Link para o vídeo demonstrativo:** https://youtu.be/PAA6el45YL8
 
