@@ -5,11 +5,9 @@ Autores: **Gabriel Zolla Juarez - RA: 11201721446**
 
 **Pedro Henrique Batistela Lopes - RA: 11201722043**
 
-**Link do repositório do código-fonte:** https://github.com/gabezolla/abcg/tree/main/examples/pokeduel
+**Link do repositório do código-fonte:** https://github.com/gabezolla/Projeto3-CG/tree/main/examples/atividade3
 
-**Link para a página Web com a aplicação em WebAssembly:** https://gabezolla.github.io/abcg/pokeduel/
-
-**Link para o vídeo demonstrativo:** https://youtu.be/PAA6el45YL8
+**Link para o vídeo demonstrativo:** https://youtu.be/ZBtz5WcItsI
 
 Este repositório contém o código-fonte do Round-6, projeto desenvolvido para a disciplina de Computação Gráfica, ministrada pelo Prof. Bruno Dorta.
 
@@ -86,10 +84,37 @@ Além disso, destacar-se-á o uso de mapeamento cúbico (do inglês cubemap), qu
 void Model::loadCubeTexture(const std::string& path) {
   if (!std::filesystem::exists(path)) return;
 
-  abcg::glDeleteTextures(1, &m_cubeTexture);
+  glDeleteTextures(1, &m_cubeTexture);
   m_cubeTexture = abcg::opengl::loadCubemap(
-      {path + "posx.jpg", path + "negx.jpg", path + "posy.jpg",
-       path + "negy.jpg", path + "posz.jpg", path + "negz.jpg"});
+      {path + "px.png", path + "nx.png", path + "py.png",
+       path + "ny.png", path + "pz.png", path + "nz.png"});
+}
+```
+
+Por fim, fez-se o uso também de uma biblioteca externa SDL para permitir a alocação de buffers para transmitir sons. No caso, optamos pela música característica da série Squid Game, que gera uma ambientalização ao aplicativo. Essa funcionalidade foi desenvolvida a partir da função abaixo:
+
+```
+void OpenGLWindow::initializeSound(std::string path){
+  // clean up previous sounds
+  SDL_CloseAudioDevice(m_deviceId);
+  SDL_FreeWAV(m_wavBuffer);
+
+  SDL_AudioSpec wavSpec;
+  Uint32 wavLength;
+
+  if (SDL_LoadWAV(path.c_str(), &wavSpec, &m_wavBuffer, &wavLength) == nullptr) {
+    throw abcg::Exception{abcg::Exception::Runtime(
+        fmt::format("Failed to load sound {} ({})", path, SDL_GetError()))};
+  }
+
+  m_deviceId = SDL_OpenAudioDevice(nullptr, 0, &wavSpec, nullptr, 0);
+
+  if (SDL_QueueAudio(m_deviceId, m_wavBuffer, wavLength) < 0) {
+    throw abcg::Exception{abcg::Exception::Runtime(
+        fmt::format("Failed to play sound {} ({})", path, SDL_GetError()))};
+  }
+
+  SDL_PauseAudioDevice(m_deviceId, 0);
 }
 ```
 
